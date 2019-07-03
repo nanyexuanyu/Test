@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>非对称加密测试</title>
+<script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+<script src="js/jsencrypt.js" type="text/javascript"></script>
+<script>
+	//使用jsencrypt类库加密js方法，
+	 /*function encryptRequest(reqUrl, data, publicKey) {
+		var encrypt = new JSEncrypt();
+		encrypt.setPublicKey(publicKey);
+		// ajax请求发送的数据对象
+		var sendData = [];
+		// 将data数组赋给ajax对象
+		for ( var key in data) {
+			sendData.push(encrypt.encrypt(data[key]));
+		}
+
+		alert(sendData)
+		debugger
+		$.ajax({
+			 url : reqUrl,
+			 type : 'post',
+			 data : {
+				 par : JSON.stringify(sendData)
+			 },
+			 dataType : 'text',
+			 success : function(data) {
+				 console.info(data);
+			 },
+			 error : function(xhr) {
+				 console.error('出错了');
+			 }
+		 });
+
+	}*/
+	$(function() {
+		//请求公钥
+		$.ajax({
+			type : "GET",
+			url : "/PKI_war_exploded//GetPubKey",
+			data : null,
+			dataType : "text",
+			success : function(data) {
+				$("#d1").html("获取公钥成功");
+				$("#p1").html(data);
+			}
+		});
+		//客户端加密
+		$("#encrypt").click(function() {
+			var encrypt = new JSEncrypt();
+			encrypt.setPublicKey($("#p1").val());
+			var apwd1 = encrypt.encrypt($("#t1").val())
+			$("#t2").val(apwd1);
+			$("#t1").val("");
+		})
+		//服务端解密
+		$("#decrypt").click(function() {
+			$.ajax({
+				type : "post",
+				url : "/PKI_war_exploded//DoDecrypt",
+				data : {
+					text : $("#t2").val()
+				},
+				dataType : "text",
+				success : function(data) {
+					$("#t1").val(data);
+				}
+			});
+		})
+
+	})
+</script>
+</head>
+<body>
+	<h3>公钥</h3>
+	<textarea rows="5" cols="100" id="p1"></textarea>
+	<h3>输入内容</h3>
+	<h4>注:由于RSA加密算法的限制，需要加密的明文长度不能超过117个字符</h4>
+	<textarea rows="10" cols="50" id="t1"></textarea>
+	<p>
+		<input type="button" value="客户端加密↓" id="encrypt" /> <input type="button" value="服务端解密↑" id="decrypt" />
+	</p>
+	<h2>加解密结果</h2>
+	<textarea rows="10" cols="50" id="t2"></textarea>
+</body>
+</html>
